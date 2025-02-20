@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube to MP3 Converter</title>
+</head>
+<body>
+    <h2>Enter YouTube Video URL</h2>
+    <input type="text" id="videoUrl" placeholder="Paste YouTube URL here"> <!-- Input field for YouTube URL -->
+    <button onclick="downloadAudio()">Convert & Download</button> <!-- Button to start conversion -->
+
+    <script>
+        async function downloadAudio() {
+            const url = document.getElementById("videoUrl").value;  // Get the input URL
+            if (!url) {
+                alert("Please enter a valid YouTube URL.");  // Alert if URL is empty
+                return;
+            }
+
+            const formData = new FormData();  // Create FormData object
+            formData.append("url", url);  // Append URL to form data
+
+            try {
+                const response = await fetch("http://localhost:8000/convert-audio/", {
+                    method: "POST",
+                    body: formData  // Send form data to backend
+                });
+
+                if (!response.ok) {  // Check if response is not OK
+                    throw new Error("Download failed.");
+                }
+
+                // Convert response to blob (binary large object)
+                const blob = await response.blob();
+                const downloadUrl = URL.createObjectURL(blob);  // Create a URL for the blob
+                const link = document.createElement("a");  // Create a temporary link element
+                link.href = downloadUrl;  // Set download URL
+                link.download = "audio.mp3";  // Set default file name
+                document.body.appendChild(link);  // Append link to document
+                link.click();  // Trigger download
+                document.body.removeChild(link);  // Remove link after download
+            } catch (error) {
+                console.error("Error:", error);
+            }
+        }
+    </script>
+</body>
+</html>
